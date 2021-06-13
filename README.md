@@ -19,7 +19,8 @@
 
 7. 설치환경 : UnityHub, Unity, Visual Studio
 
-8. 기획자료 : [모바일콘텐츠 기말미션5 보고서.pdf](https://github.com/ParkSeongmi/Escape-Island/files/6644658/5.pdf)
+8. 기획자료 : [모바일콘텐츠 기말미션5 보고서.pdf](https://github.com/ParkSeongmi/Escape-Island/files/6644726/5.pdf)
+
 
 
 
