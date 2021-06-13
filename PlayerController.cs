@@ -11,16 +11,26 @@ public class PlayerController : MonoBehaviour
     private float runSpeed;
     [SerializeField]
     private float crouchSpeed;
-    
+    [SerializeField]
+    private float swimSpeed;
+    [SerializeField]
+    private float swimFastSpeed;
+    [SerializeField]
+    private float upSwimSpeed;
+
     private float applySpeed;
 
     [SerializeField]
     private float jumpForce;
 
     //상태 변수
+    private bool isWalk = false;
     private bool isRun = false;
     private bool isCrouch = false;
     private bool isGround = true;
+
+    //움직임 체크 변수
+    private Vector3 lastPos;
 
     //앉았을 때 얼마나 앉을지 결정하는 변수
     [SerializeField]
@@ -43,37 +53,59 @@ public class PlayerController : MonoBehaviour
     //필요한 컴포넌트
     [SerializeField]
     private Camera theCamera;
-
     private Rigidbody myRigid;
+    private GunController theGunController;
+    private Crosshair theCrosshair;
+    private StatusController theStatusController;
 
     // Start is called before the first frame update
     void Start()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
         myRigid = GetComponent<Rigidbody>();
-        applySpeed = walkSpeed;
+        theGunController = FindObjectOfType<GunController>();
+        theCrosshair = FindObjectOfType<Crosshair>();
+        theStatusController = FindObjectOfType<StatusController>();
+        //WeaponManager.isChangeWeapon = ture;
 
         //초기화
+        applySpeed = walkSpeed;
         originPosY = theCamera.transform.localPosition.y;
         applyCrouchPosY = originPosY;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        IsGround();
-        TryJump();
-        TryRun();
-        TryCrouch();
-        Move();
-        CameraRotation();
-        CharacterRotation();
+        if(GameManager.canPlayerMove)
+        {
+            WaterCheck();
+            IsGround();
+            TryJump();
+            TryRun();
+            TryCrouch();
+            Move();
+            MoveCheck();
+            CameraRotation();
+            CharacterRotation();
+        }
     }
 
+    private void WaterCheck()
+    {
+        if(GameManager.isWater)
+        {
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+                applySpeed = swimFastSpeed;
+            else
+                applySpeed = swimSpeed;
+        }
+    }
     //앉기 시도
     private void TryCrouch()
     {
-        if(Input.GetKeyDown(KeyCode.LeftCommand))
+        if(Input.GetKeyDown(KeyCode.LeftControl))
         {
             Crouch();
         }
@@ -83,6 +115,7 @@ public class PlayerController : MonoBehaviour
     private void Crouch()
     {
         isGround = !isCrouch;
+        theCrosshair.CrouchingAnimation(isCrouch);
         
         if(isCrouch)
         {
@@ -123,23 +156,28 @@ public class PlayerController : MonoBehaviour
 
     private void TryJump()
     {
-        if(Input.GetKeyDown(KeyCode.Space) && isGround)
-        {
+        if (Input.GetKeyDown(KeyCode.Space) && isGround && !GameManager.isWater)
             Jump();
-        }
+        else if (Input.GetKey(KeyCode.Space) && GameManager.isWater)
+            UpSwim();
+    }
+
+    private void UpSwim()
+    {
+        myRigid.velocity = transform.up * upSwimSpeed;
     }
 
     private void Jump()
     {
         if(isCrouch)
            Crouch();
-
+        theStatusController.DecreaseStamina(10);
         myRigid.velocity = transform.up * jumpForce;
     }
 
     private void TryRun()
     {
-        if(Input.GetKey(KeyCode.LeftShift))
+        if(Input.GetKeyDown(KeyCode.LeftShift))
         {
             Running();
         }
@@ -155,16 +193,19 @@ public class PlayerController : MonoBehaviour
            Crouch();
 
         isRun = true;
+        theCrosshair.RunningAnimation(isRun);
+        theStatusController.DecreaseStamina(10);
         applySpeed = runSpeed;
     }
 
     private void RunningCancel()
     {
         isRun = false;
+        theCrosshair.RunningAnimation(isRun);
         applySpeed = walkSpeed;
     }
     
-
+    //움직임 실행
     private void Move()
     {
         float _moveDirX = Input.GetAxisRaw("Horizontal"); 
@@ -176,6 +217,20 @@ public class PlayerController : MonoBehaviour
         Vector3 _velocity = (_monveHorizontal + _monveVertiacl).normalized * applySpeed;
         
         myRigid.MovePosition(transform.position + _velocity * Time.deltaTime);
+    }
+
+    private void MoveCheck()
+    {
+        if(!isRun && !isCrouch)
+        {
+            if(Vector3.Distance(lastPos, transform.position) >= 0.01f)
+               isWalk = true;
+            else 
+               isWalk = false;
+
+            theCrosshair.WalkingAnimation(isWalk);
+            lastPos = transform.position;
+        }
     }
 
     private void CharacterRotation()
@@ -191,7 +246,7 @@ public class PlayerController : MonoBehaviour
         // 상하 카메라 회전
         float _xRotation = Input.GetAxisRaw("Mouse Y");
         float _cameraRotationX = _xRotation * lookSensitivity;
-        currentCameraRotationX += _cameraRotationX;
+        currentCameraRotationX -= _cameraRotationX;
         currentCameraRotationX = Mathf.Clamp(currentCameraRotationX, -cameraRotationLimit, cameraRotationLimit);
 
         theCamera.transform.localEulerAngles = new Vector3(currentCameraRotationX, 0f, 0f);
