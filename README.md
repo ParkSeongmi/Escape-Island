@@ -19,7 +19,8 @@
 
 7. 설치환경 : UnityHub, Unity, Visual Studio
 
-8. 기획자료 : [Uploading 모바일콘텐츠 기말미션5 보고서.pdf…]()
+8. 기획자료 : [모바일콘텐츠 기말미션5 보고서.pdf](https://github.com/ParkSeongmi/Escape-Island/files/6644658/5.pdf)
+
 
 
 9. 게임 설명
@@ -28,6 +29,9 @@
 섬 곳곳에 있는 식량을 찾으며 체력을 체우면서 보물을 찾아야 한다.
 그런 섬에 몬스터들이 돌아다니는데 이들을 피해서 보물을 찾아야 한다.
 보물을 찾으면 게임 클리어!
+
+10. 참고 에셋
+<img width="928" alt="스크린샷 2021-06-14 오전 4 53 53" src="https://user-images.githubusercontent.com/84662506/121821975-6e918e80-ccd7-11eb-89a5-d56168413d36.png">
 
 
 
